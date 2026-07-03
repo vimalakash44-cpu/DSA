@@ -1,0 +1,26 @@
+import java.util.*;
+class Solution {
+    public int majorityElement(int[] nums) {
+        HashMap<Integer, Integer> ele = new HashMap<>();
+        int max=0;
+        int value;
+        int maxvalue=0;
+        for(int i=0;i<nums.length;i++){
+            if(ele.containsKey(nums[i])){
+                value=ele.get(nums[i])+1;
+                ele.replace(nums[i],value);
+            }
+            else{
+                value=1;
+                ele.put(nums[i],value);
+            }
+        }
+        for (Map.Entry<Integer, Integer> entry : ele.entrySet()) {
+            if(max<entry.getValue()){
+                maxvalue=entry.getKey();
+                max=entry.getValue();
+            }
+        }
+        return maxvalue;
+    }
+}
