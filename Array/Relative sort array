@@ -1,0 +1,36 @@
+class Solution {
+    public int[] relativeSortArray(int[] arr1, int[] arr2) {
+        ArrayList<Integer> list = new ArrayList<>();
+        HashMap<Integer,Integer> map=new HashMap<>();
+        for(int i=0;i<arr1.length;i++){
+            map.put(arr1[i],(map.getOrDefault(arr1[i],0)+1));
+        }
+        int index=0;
+        for(int i=0;i<arr2.length;i++){
+            int j=0;
+            while(j<map.get(arr2[i])){
+                list.add(arr2[i]);
+                j++;
+            }
+        }
+        PriorityQueue<Integer> pq=new PriorityQueue<>();
+        map.forEach((key, value) -> {
+        if(!list.contains(key)){
+            int k=0;
+            while(k<value){
+                pq.add(key);
+                k++;
+            }
+        }
+        });
+        while(!pq.isEmpty()){
+            int s=pq.poll();
+            list.add(s);
+        }
+        int[] intArray = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            intArray[i] = list.get(i);
+         }
+         return intArray;
+    }
+}
