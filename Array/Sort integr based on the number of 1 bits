@@ -1,0 +1,23 @@
+class Solution {
+    public int[] sortByBits(int[] arr) {
+        int n = arr.length;
+        int min;
+        for(int i=0;i<n;i++){
+            min=i;
+            for(int j=i+1;j<n;j++){
+                int bit1=Integer.bitCount(arr[min]);
+                int bit2=Integer.bitCount(arr[j]);
+                if(bit1>bit2){
+                    min=j;
+                }
+                else if(bit1==bit2 && arr[min]>arr[j]){
+                    min=j;
+                }
+            }
+            int temp=arr[min];
+            arr[min]=arr[i];
+            arr[i]=temp;
+        }   
+        return arr;
+    }
+}
