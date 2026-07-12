@@ -1,0 +1,40 @@
+int findComplement(int num) {
+  int* ptr=(int*)malloc(32*sizeof(int));
+  int index=0;
+  while(num >0){
+    int re=num%2;
+    *(ptr+index)=re;
+    index++;
+    num=num/2;
+  }
+  int l=0;
+  int r=index-1;
+  int i;
+  while(l<=r){
+    int temp=*(ptr+l);
+    int temp1=*(ptr+r);
+    if(temp==0){
+       *(ptr+l)=1; 
+    }
+    else{
+       *(ptr+l)=0; 
+    }
+    if(temp1==0){
+       *(ptr+r)=1;
+    }
+    else{
+       *(ptr+r)=0; 
+    }
+    temp=*(ptr+l);
+    *(ptr+l)=*(ptr+r);
+    *(ptr+r)=temp;
+    l++;
+    r--;
+  }
+  int decimal=0;
+  for(i=0;i<index;i++){
+    decimal=decimal*2+*(ptr+i);
+  }
+  return decimal;
+
+}
