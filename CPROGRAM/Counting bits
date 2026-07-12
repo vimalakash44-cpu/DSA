@@ -1,0 +1,25 @@
+int* countBits(int n, int* returnSize) {
+    *returnSize = n + 1;
+    int i,j;
+    int* ptr=(int*)malloc((n+1)*sizeof(int));
+    int index=0;
+    for(j=0;j<=n;j++){
+        i=j;
+        if(i==0){
+            *(ptr+index)=0;
+            index++;
+            continue;
+        }
+        int count=0;
+        while(i>0){
+            int re=i % 2;
+            if(re==1){
+                count++;
+            }
+            i=i/2;
+        }
+        *(ptr+index)=count;
+        index++;
+    }
+    return ptr;
+}
