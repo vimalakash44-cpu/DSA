@@ -1,0 +1,44 @@
+void swap(int *a ,int *b){
+    int temp=*a;
+    *a=*b;
+    *b=temp;
+}
+int partition(int nums[],int low,int high){
+    int randomIndex = low + rand() % (high - low + 1);
+     swap(&nums[randomIndex], &nums[high]);
+    int pivot=nums[high];
+    int i=low-1;
+    int j;
+    for(j=low;j<high;j++){
+        if(pivot>nums[j]){
+            i++;
+            swap(&nums[i],&nums[j]);
+        }
+    }
+    swap(&nums[i+1],&nums[high]);
+    return i+1;
+}
+int quickselect(int nums[],int low,int high,int k){
+    if (low > high)
+    {
+        return -1;
+    }
+ 
+    int partitonindex=partition(nums,low,high);
+    if(partitonindex==k){
+        return nums[partitonindex];
+    }
+    else if(partitonindex >k){
+        return quickselect(nums,low,partitonindex-1,k);
+    }
+    else if(partitonindex < k){
+        return quickselect(nums,partitonindex+1,high,k);
+    }
+    return -1;
+}
+int findKthLargest(int* nums, int numsSize, int k) {
+k = numsSize - k;
+ int s=quickselect(nums, 0, numsSize - 1, k);
+ return s;
+
+}
