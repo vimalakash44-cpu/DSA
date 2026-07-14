@@ -1,0 +1,22 @@
+int* sortArrayByParity(int* nums, int numsSize, int* returnSize) {
+    *returnSize=numsSize;
+    int l=0;
+    int r=numsSize-1;
+    int i;
+     while(l < r){
+        if(nums[l]%2!=0 && nums[r]%2==0){
+            int temp=nums[l];
+            nums[l]=nums[r];
+            nums[r]=temp;
+            l++;
+            r--;
+        }
+        else if(nums[l]%2==0){
+            l++;
+        }
+        else if(nums[r]%2!=0){
+            r--;
+        }
+    }
+    return nums;
+}
