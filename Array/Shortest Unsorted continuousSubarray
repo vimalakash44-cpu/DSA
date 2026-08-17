@@ -1,0 +1,19 @@
+class Solution {
+    public int findUnsortedSubarray(int[] nums) {
+        int n = nums.length;
+        int[] arr = nums.clone();
+        Arrays.sort(arr);
+        int left = 0;
+        while (left < n && nums[left] == arr[left]) {
+            left++;
+        }
+        if (left == n) {
+            return 0;
+        }
+        int right = n - 1;
+        while (right >= 0 && nums[right] == arr[right]) {
+            right--;
+        }
+        return right - left + 1;
+    }
+}
