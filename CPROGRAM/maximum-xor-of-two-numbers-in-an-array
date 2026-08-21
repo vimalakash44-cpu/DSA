@@ -1,0 +1,39 @@
+typedef struct {
+    int next[2];
+} TrieNode;
+int findMaximumXOR(int* nums, int numsSize) {
+    if (numsSize < 2) return 0;
+    int maxNodes = numsSize * 31 + 1;
+    TrieNode* trie = (TrieNode*)malloc(sizeof(TrieNode) * maxNodes);
+    memset(trie, 0, sizeof(TrieNode) * maxNodes);
+    int nodeCount = 1; 
+    int globalMaxXOR = 0;
+    for (int i = 0; i < numsSize; i++) {
+        int num = nums[i];
+        int insertNode = 0;
+        int searchNode = 0;
+        int currentXOR = 0;
+        for (int bitIdx = 30; bitIdx >= 0; bitIdx--) {
+            int bit = (num >> bitIdx) & 1;
+            int oppositeBit = 1 - bit;
+            if (trie[insertNode].next[bit] == 0) {
+                trie[insertNode].next[bit] = nodeCount++;
+            }
+            insertNode = trie[insertNode].next[bit];
+            if (i > 0) {
+                if (trie[searchNode].next[oppositeBit] != 0) {
+                    currentXOR |= (1 << bitIdx);
+                    searchNode = trie[searchNode].next[oppositeBit];
+                } else {
+                    searchNode = trie[searchNode].next[bit];
+                }
+            }
+        }
+        
+        if (i > 0 && currentXOR > globalMaxXOR) {
+            globalMaxXOR = currentXOR;
+        }
+    }
+    free(trie);
+    return globalMaxXOR;
+}
