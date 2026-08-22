@@ -1,0 +1,68 @@
+class Solution {
+    public int balancedString(String s) {
+        int n = s.length();
+        char[] arr;
+        arr = new char[4];
+        int[] arr1;
+        arr1 = new int[4];
+        arr[0] = 'Q';
+        arr[1] = 'R';
+        arr[2] = 'W';
+        arr[3] = 'E';
+        int eq = n / 4;
+        int index = 0;
+        for(int i = 0; i < n; i++) {
+            char p = s.charAt(i);
+            for(int j = 0; j < 4; j++) {
+                if(p == arr[j]) {
+                    index = j;
+                }
+            }
+            arr1[index] = arr1[index] + 1;
+        }
+        boolean balanced = true;
+        for(int i = 0; i < 4; i++) {
+            if(arr1[i] > eq) {
+                balanced = false;
+            }
+        }
+        if(balanced) {
+            return 0;
+        }
+        int left = 0;
+        int right = 0;
+        int answer = n;
+        while(right < n) {
+            char p = s.charAt(right);
+            for(int j = 0; j < 4; j++) {
+                if(p == arr[j]) {
+                    index = j;
+                }
+            }
+            arr1[index]--;
+            while(left <= right) {
+                boolean possible = true;
+                for(int i = 0; i < 4; i++) {
+                    if(arr1[i] > eq) {
+                        possible = false;
+                    }
+                }
+                if(possible) {
+                    answer = Math.min(answer, right - left + 1);
+                    char q = s.charAt(left);
+                    for(int j = 0; j < 4; j++) {
+                        if(q == arr[j]) {
+                            index = j;
+                        }
+                    }
+                    arr1[index]++;
+                    left++;
+                } else {
+                    break;
+                }
+            }
+            right++;
+        }
+        return answer;
+    }
+}
