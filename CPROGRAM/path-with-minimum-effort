@@ -1,0 +1,121 @@
+typedef struct {
+    int r;
+    int c;
+    int effort;
+} HeapNode;
+
+typedef struct {
+    HeapNode* data;
+    int size;
+    int capacity;
+} MinHeap;
+
+MinHeap* createMinHeap(int capacity) {
+    MinHeap* heap = (MinHeap*)malloc(sizeof(MinHeap));
+    heap->data = (HeapNode*)malloc(capacity * sizeof(HeapNode));
+    heap->size = 0;
+    heap->capacity = capacity;
+    return heap;
+}
+
+void swap(HeapNode* a, HeapNode* b) {
+    HeapNode temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void push(MinHeap* heap, int r, int c, int effort) {
+    heap->data[heap->size].r = r;
+    heap->data[heap->size].c = c;
+    heap->data[heap->size].effort = effort;
+    int i = heap->size;
+    heap->size++;
+    
+    while (i > 0) {
+        int p = (i - 1) / 2;
+        if (heap->data[p].effort <= heap->data[i].effort) break;
+        swap(&heap->data[p], &heap->data[i]);
+        i = p;
+    }
+}
+
+HeapNode pop(MinHeap* heap) {
+    HeapNode res = heap->data[0];
+    heap->size--;
+    if (heap->size > 0) {
+        heap->data[0] = heap->data[heap->size];
+        int i = 0;
+        while (2 * i + 1 < heap->size) {
+            int left = 2 * i + 1;
+            int right = 2 * i + 2;
+            int smallest = left;
+            if (right < heap->size && heap->data[right].effort < heap->data[left].effort) {
+                smallest = right;
+            }
+            if (heap->data[i].effort <= heap->data[smallest].effort) break;
+            swap(&heap->data[i], &heap->data[smallest]);
+            i = smallest;
+        }
+    }
+    return res;
+}
+
+int minimumEffortPath(int** heights, int heightsSize, int* heightsColSize) {
+    int rows = heightsSize;
+    int cols = heightsColSize[0];
+    
+    int** max_effort = (int**)malloc(rows * sizeof(int*));
+    for (int i = 0; i < rows; i++) {
+        max_effort[i] = (int*)malloc(cols * sizeof(int));
+        for (int j = 0; j < cols; j++) {
+            max_effort[i][j] = 1e9;
+        }
+    }
+    
+    MinHeap* heap = createMinHeap(rows * cols * 4);
+    
+    max_effort[0][0] = 0;
+    push(heap, 0, 0, 0);
+    
+    int dr[] = {-1, 1, 0, 0};
+    int dc[] = {0, 0, -1, 1};
+    
+    while (heap->size > 0) {
+        HeapNode curr = pop(heap);
+        int r = curr.r;
+        int c = curr.c;
+        int eff = curr.effort;
+        
+        if (r == rows - 1 && c == cols - 1) {
+            for (int i = 0; i < rows; i++) free(max_effort[i]);
+            free(max_effort);
+            free(heap->data);
+            free(heap);
+            return eff;
+        }
+        
+        if (eff > max_effort[r][c]) continue;
+        
+        for (int i = 0; i < 4; i++) {
+            int nr = r + dr[i];
+            int nc = c + dc[i];
+            
+            if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+                int new_eff = abs(heights[r][c] - heights[nr][nc]);
+                int route_eff = eff > new_eff ? eff : new_eff;
+                
+                if (route_eff < max_effort[nr][nc]) {
+                    max_effort[nr][nc] = route_eff;
+                    push(heap, nr, nc, route_eff);
+                }
+            }
+        }
+    }
+    
+    for (int i = 0; i < rows; i++) free(max_effort[i]);
+    free(max_effort);
+    free(heap->data);
+    free(heap);
+    
+    return 0;
+}
