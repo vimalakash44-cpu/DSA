@@ -1,0 +1,199 @@
+
+#include <stdlib.h>
+#include <string.h>
+
+#define MAXN 100005
+
+typedef struct {
+    int val;
+    int idx;
+} Node;
+
+Node low[MAXN], high[MAXN];
+int lowN, highN;
+int lowSize, highSize;
+int delayed[MAXN], side[MAXN];
+
+void swapNode(Node *a, Node *b)
+{
+    Node t = *a;
+    *a = *b;
+    *b = t;
+}
+
+void pushLow(Node x)
+{
+    int i = ++lowN;
+    low[i] = x;
+    while (i > 1 && low[i].val > low[i / 2].val) {
+        swapNode(&low[i], &low[i / 2]);
+        i /= 2;
+    }
+}
+
+Node popLow(void)
+{
+    Node x = low[1];
+    low[1] = low[lowN--];
+    int i = 1;
+    while (i * 2 <= lowN) {
+        int c = i * 2;
+        if (c + 1 <= lowN && low[c + 1].val > low[c].val)
+            c++;
+        if (low[i].val >= low[c].val)
+            break;
+        swapNode(&low[i], &low[c]);
+        i = c;
+    }
+    return x;
+}
+
+void pushHigh(Node x)
+{
+    int i = ++highN;
+    high[i] = x;
+    while (i > 1 && high[i].val < high[i / 2].val) {
+        swapNode(&high[i], &high[i / 2]);
+        i /= 2;
+    }
+}
+
+Node popHigh(void)
+{
+    Node x = high[1];
+    high[1] = high[highN--];
+    int i = 1;
+    while (i * 2 <= highN) {
+        int c = i * 2;
+        if (c + 1 <= highN && high[c + 1].val < high[c].val)
+            c++;
+        if (high[i].val <= high[c].val)
+            break;
+        swapNode(&high[i], &high[c]);
+        i = c;
+    }
+    return x;
+}
+
+void pruneLow(void)
+{
+    while (lowN > 0 && delayed[low[1].idx]) {
+        delayed[low[1].idx] = 0;
+        popLow();
+    }
+}
+
+void pruneHigh(void)
+{
+    while (highN > 0 && delayed[high[1].idx]) {
+        delayed[high[1].idx] = 0;
+        popHigh();
+    }
+}
+
+void rebalance(void)
+{
+    pruneLow();
+    pruneHigh();
+
+    while (lowSize > highSize + 1) {
+        Node x = popLow();
+        lowSize--;
+        highSize++;
+        side[x.idx] = 1;
+        pushHigh(x);
+        pruneLow();
+    }
+
+    while (lowSize < highSize) {
+        Node x = popHigh();
+        highSize--;
+        lowSize++;
+        side[x.idx] = 0;
+        pushLow(x);
+        pruneHigh();
+    }
+
+    pruneLow();
+    pruneHigh();
+}
+
+void addNum(int val, int idx)
+{
+    Node x = {val, idx};
+
+    pruneLow();
+
+    if (lowSize == 0 || val <= low[1].val) {
+        pushLow(x);
+        lowSize++;
+        side[idx] = 0;
+    } else {
+        pushHigh(x);
+        highSize++;
+        side[idx] = 1;
+    }
+
+    rebalance();
+}
+
+void removeNum(int idx)
+{
+    delayed[idx] = 1;
+
+    if (side[idx] == 0)
+        lowSize--;
+    else
+        highSize--;
+
+    pruneLow();
+    pruneHigh();
+    rebalance();
+}
+
+double getMedian(int k)
+{
+    pruneLow();
+    pruneHigh();
+
+    if (k % 2)
+        return (double)low[1].val;
+
+    return ((double)low[1].val + high[1].val) / 2.0;
+}
+
+double* medianSlidingWindow(int* nums, int numsSize, int k,
+                            int* returnSize)
+{
+    *returnSize = 0;
+
+    if (nums == NULL || k < 1 || k > numsSize)
+        return NULL;
+
+    int count = numsSize - k + 1;
+    double *result = malloc((size_t)count * sizeof(double));
+
+    if (result == NULL)
+        return NULL;
+
+    lowN = highN = 0;
+    lowSize = highSize = 0;
+
+    memset(delayed, 0, sizeof(delayed));
+    memset(side, 0, sizeof(side));
+
+    for (int i = 0; i < k; i++)
+        addNum(nums[i], i);
+
+    for (int i = 0; i < count; i++) {
+        result[i] = getMedian(k);
+
+        if (i + k < numsSize) {
+            removeNum(i);
+            addNum(nums[i + k], i + k);
+        }
+    }
+
+    *returnSize = count;
+    return result;
+}
