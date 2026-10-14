@@ -1,0 +1,27 @@
+
+class Solution {
+    public int strStr(String haystack, String needle) {
+        char[] s = haystack.toCharArray();
+        char[] f = needle.toCharArray();
+
+        int start = -1;
+        int j = 0;
+        int count = 0;
+
+        if (needle.length() == 0)
+            return 0;
+
+        for (int i = 0; i <= s.length - f.length; i++) {
+            start = i;
+            j = 0;
+            count = 0;
+            while (j < f.length && s[i + j] == f[j]) {
+                j++;
+                count++;
+            }
+            if (count == f.length)
+                return start;
+        }
+        return -1;
+    }
+}
