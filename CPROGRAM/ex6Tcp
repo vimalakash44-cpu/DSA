@@ -1,0 +1,171 @@
+
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+int read_line(int fd, char str[], int size)
+{
+    int i = 0;
+    char ch;
+
+    while (i < size - 1)
+    {
+        int n = read(fd, &ch, 1);
+
+        if (n <= 0)
+        {
+            if (i == 0)
+                return n;
+            break;
+        }
+
+        if (ch == '\n')
+            break;
+
+        str[i++] = ch;
+    }
+
+    str[i] = '\0';
+    return i;
+}
+
+int main()
+{
+    int sockfd, newsockfd;
+    struct sockaddr_in server, client;
+    socklen_t len = sizeof(client);
+    char str[100], response[100];
+    int i, j, flag, n;
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    memset(&server, 0, sizeof(server));
+    server.sin_family = AF_INET;
+    server.sin_port = htons(8080);
+    server.sin_addr.s_addr = INADDR_ANY;
+
+    bind(sockfd, (struct sockaddr *)&server, sizeof(server));
+    listen(sockfd, 5);
+
+    printf("Server waiting for client...\n");
+
+    newsockfd = accept(sockfd, (struct sockaddr *)&client, &len);
+    printf("Client connected.\n");
+
+    while (1)
+    {
+        n = read_line(newsockfd, str, sizeof(str));
+
+        if (n <= 0)
+            break;
+
+        if (strcmp(str, "exit") == 0)
+            break;
+
+        i = 0;
+        j = strlen(str) - 1;
+        flag = 1;
+
+        while (i < j)
+        {
+            if (str[i] != str[j])
+            {
+                flag = 0;
+                break;
+            }
+            i++;
+            j--;
+        }
+
+        if (flag)
+            strcpy(response, "Palindrome");
+        else
+            strcpy(response, "Not a Palindrome");
+
+        strcat(response, "\n");
+        write(newsockfd, response, strlen(response));
+    }
+
+    printf("Client disconnected.\n");
+    close(newsockfd);
+    close(sockfd);
+
+    return 0;
+}
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+int read_line(int fd, char str[], int size)
+{
+    int i = 0;
+    char ch;
+
+    while (i < size - 1)
+    {
+        int n = read(fd, &ch, 1);
+
+        if (n <= 0)
+        {
+            if (i == 0)
+                return n;
+            break;
+        }
+
+        if (ch == '\n')
+            break;
+
+        str[i++] = ch;
+    }
+
+    str[i] = '\0';
+    return i;
+}
+
+int main()
+{
+    int sockfd;
+    struct sockaddr_in server;
+    char str[100];
+    int n;
+
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
+    memset(&server, 0, sizeof(server));
+    server.sin_family = AF_INET;
+    server.sin_port = htons(8080);
+    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    connect(sockfd, (struct sockaddr *)&server, sizeof(server));
+
+    while (1)
+    {
+        printf("Enter a string (exit to stop): ");
+
+        if (fgets(str, sizeof(str), stdin) == NULL)
+            break;
+
+        str[strcspn(str, "\n")] = '\0';
+
+        if (strlen(str) == 0)
+            continue;
+
+        strcat(str, "\n");
+        write(sockfd, str, strlen(str));
+
+        if (strcmp(str, "exit\n") == 0)
+            break;
+
+        n = read_line(sockfd, str, sizeof(str));
+
+        if (n <= 0)
+            break;
+
+        printf("Server response: %s\n", str);
+    }
+
+    close(sockfd);
+    return 0;
+}
