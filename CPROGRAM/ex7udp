@@ -1,0 +1,127 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+int main()
+{
+    int sockfd;
+    struct sockaddr_in server, client;
+    socklen_t len = sizeof(client);
+    char buffer[100], result[100];
+    float a, b, ans;
+    char op;
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    server.sin_family = AF_INET;
+    server.sin_port = htons(8080);
+    server.sin_addr.s_addr = INADDR_ANY;
+
+    bind(sockfd, (struct sockaddr *)&server, sizeof(server));
+
+    printf("UDP Server is running...\n");
+
+    while (1)
+    {
+        int n = recvfrom(sockfd, buffer, sizeof(buffer) - 1, 0,
+                         (struct sockaddr *)&client, &len);
+
+        if (n <= 0)
+            continue;
+
+        buffer[n] = '\0';
+
+        if (strcmp(buffer, "exit") == 0)
+        {
+            printf("Client exited.\n");
+            break;
+        }
+
+        if (sscanf(buffer, "%f %c %f", &a, &op, &b) != 3)
+        {
+            strcpy(result, "Invalid input");
+        }
+        else
+        {
+            switch (op)
+            {
+                case '+': ans = a + b; break;
+                case '-': ans = a - b; break;
+                case '*': ans = a * b; break;
+                case '/':
+                    if (b == 0)
+                    {
+                        strcpy(result, "Division by zero");
+                        sendto(sockfd, result, strlen(result) + 1, 0,
+                               (struct sockaddr *)&client, len);
+                        continue;
+                    }
+                    ans = a / b;
+                    break;
+                default:
+                    strcpy(result, "Invalid operator");
+                    sendto(sockfd, result, strlen(result) + 1, 0,
+                           (struct sockaddr *)&client, len);
+                    continue;
+            }
+
+            snprintf(result, sizeof(result), "Result = %.2f", ans);
+        }
+
+        sendto(sockfd, result, strlen(result) + 1, 0,
+               (struct sockaddr *)&client, len);
+    }
+
+    close(sockfd);
+    return 0;
+}
+
+vimalakash@AKASH:~/leetcode$ cat ex7r.c
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+int main()
+{
+    int sockfd;
+    struct sockaddr_in server;
+    socklen_t len = sizeof(server);
+    char buffer[100], result[100];
+    float a, b;
+    char op;
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    server.sin_family = AF_INET;
+    server.sin_port = htons(8080);
+    server.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    while (1)
+    {
+        printf("Enter expression (e.g., 10 + 5) or exit: ");
+        if (scanf(" %99[^\n]", buffer) != 1)
+            break;
+
+        sendto(sockfd, buffer, strlen(buffer) + 1, 0,
+               (struct sockaddr *)&server, len);
+
+        if (strcmp(buffer, "exit") == 0)
+            break;
+
+        int n = recvfrom(sockfd, result, sizeof(result) - 1, 0,
+                         NULL, NULL);
+
+        if (n <= 0)
+            continue;
+
+        result[n] = '\0';
+        printf("Server response: %s\n\n", result);
+    }
+
+    close(sockfd);
+    return 0;
+}
